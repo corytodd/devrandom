@@ -1,0 +1,87 @@
+;
+; devrandom.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=SoftwareComponent
+ClassGuid={5c4c3332-344d-483c-8739-259e934c9cc8}
+Provider=%ManufacturerName%
+CatalogFile=devrandom.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+PnpLockDown=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+devrandom_Device_CoInstaller_CopyFiles = 11
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+devrandom.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%devrandom.DeviceDesc%=devrandom_Device, Root\devrandom
+
+[devrandom_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+devrandom.sys
+
+;-------------- Service installation
+[devrandom_Device.NT.Services]
+AddService = devrandom,%SPSVCINST_ASSOCSERVICE%, devrandom_Service_Inst
+
+; -------------- devrandom driver install sections
+[devrandom_Service_Inst]
+DisplayName    = %devrandom.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\devrandom.sys
+
+;
+;--- devrandom_Device Coinstaller installation ------
+;
+
+[devrandom_Device.NT.CoInstallers]
+AddReg=devrandom_Device_CoInstaller_AddReg
+CopyFiles=devrandom_Device_CoInstaller_CopyFiles
+
+[devrandom_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[devrandom_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[devrandom_Device.NT.Wdf]
+KmdfService =  devrandom, devrandom_wdfsect
+[devrandom_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="Ardonyx LLC"
+ClassName="SoftwareComponent"
+DiskName = "devrandom Installation Disk"
+devrandom.DeviceDesc = "devrandom Device"
+devrandom.SVCDESC = "devrandom Service"
