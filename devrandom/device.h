@@ -24,10 +24,3 @@ NTSTATUS
 DevRandomDeviceCreate(
     PWDFDEVICE_INIT DeviceInit
     );
-
-//
-// Device events
-//
-EVT_WDF_DEVICE_SELF_MANAGED_IO_INIT DevRandomEvtDeviceSelfManagedIoStart;
-EVT_WDF_DEVICE_SELF_MANAGED_IO_SUSPEND DevRandomEvtDeviceSelfManagedIoSuspend;
-
