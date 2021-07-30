@@ -1,6 +1,7 @@
 
 #define INITGUID
 
+#include <ntifs.h> // Include before ddk
 #include <ntddk.h>
 #include <wdf.h>
 

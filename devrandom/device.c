@@ -34,6 +34,8 @@ Return Value:
     WDFDEVICE device;
     NTSTATUS status;
 
+    DECLARE_CONST_UNICODE_STRING(dosDeviceName, DOS_DEV_NAME);
+
     PAGED_CODE();
 
     WDF_PNPPOWER_EVENT_CALLBACKS_INIT(&pnpPowerCallbacks);
@@ -91,6 +93,12 @@ Return Value:
             //
             status = DevRandomQueueInitialize(device);
         }
+
+        //
+        // Create a symbolic link for ease of use
+        //
+        status = WdfDeviceCreateSymbolicLink(device, &dosDeviceName);
+
     }
 
     return status;
@@ -124,9 +132,6 @@ Return Value:
 
 --*/
 {
-    PQUEUE_CONTEXT queueContext = QueueGetContext(WdfDeviceGetDefaultQueue(Device));
-    LARGE_INTEGER DueTime;
-
     KdPrint(("--> DevRandomEvtDeviceSelfManagedIoInit\n"));
 
     //
@@ -134,10 +139,6 @@ Return Value:
     // into low power state.
     //
     WdfIoQueueStart(WdfDeviceGetDefaultQueue(Device));
-
-    DueTime.QuadPart = WDF_REL_TIMEOUT_IN_MS(100);
-
-    WdfTimerStart(queueContext->Timer,  DueTime.QuadPart);
 
     KdPrint(( "<-- DevRandomEvtDeviceSelfManagedIoInit\n"));
 
@@ -168,8 +169,6 @@ Return Value:
 
 --*/
 {
-    PQUEUE_CONTEXT queueContext = QueueGetContext(WdfDeviceGetDefaultQueue(Device));
-
     PAGED_CODE();
 
     KdPrint(("--> DevRandomEvtDeviceSelfManagedIoSuspend\n"));
@@ -187,10 +186,6 @@ Return Value:
     //
     WdfIoQueueStopSynchronously(WdfDeviceGetDefaultQueue(Device));
 
-    //
-    // Stop the watchdog timer and wait for DPC to run to completion if it's already fired.
-    //
-    WdfTimerStop(queueContext->Timer, TRUE);
 
     KdPrint(( "<-- DevRandomEvtDeviceSelfManagedIoSuspend\n"));
 

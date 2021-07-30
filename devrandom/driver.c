@@ -38,8 +38,10 @@ Return Value:
 
 --*/
 {
+    PDEVICE_OBJECT deviceObject = NULL;
     WDF_DRIVER_CONFIG config;
     NTSTATUS status;
+
 
     WDF_DRIVER_CONFIG_INIT(&config,
         DevRandomEvtDeviceAdd
@@ -53,6 +55,13 @@ Return Value:
     if (!NT_SUCCESS(status)) {
         KdPrint(("Error: WdfDriverCreate failed 0x%x\n", status));
         return status;
+    }
+
+    if (!NT_SUCCESS(status)) {
+        if (deviceObject) {
+            IoDeleteDevice(deviceObject);
+        }
+        KdPrint(("Error: Failed to create IO Device"));
     }
 
 #if DBG

@@ -1,9 +1,3 @@
-// Set max write length for testing
-#define MAX_WRITE_LENGTH 1024*40
-
-// Set timer period in ms
-#define TIMER_PERIOD     1000*10
-
 //
 // This is the context that can be placed per queue
 // and would contain per queue information.
@@ -14,15 +8,9 @@ typedef struct _QUEUE_CONTEXT {
     PVOID       Buffer;
     ULONG       Length;
 
-    // Timer DPC for this queue
-    WDFTIMER    Timer;
-
     // Virtual I/O
     WDFREQUEST  CurrentRequest;
     NTSTATUS    CurrentStatus;
-
-    // SpinLock to synchronize I/O callbacks.
-    WDFSPINLOCK SpinLock;
 
 } QUEUE_CONTEXT, *PQUEUE_CONTEXT;
 
@@ -38,15 +26,13 @@ EVT_WDF_IO_QUEUE_CONTEXT_DESTROY_CALLBACK DevRandomEvtIoQueueContextDestroy;
 //
 // Events from the IoQueue object
 //
-EVT_WDF_REQUEST_CANCEL DevRandomEvtRequestCancel;
 EVT_WDF_IO_QUEUE_IO_READ DevRandomEvtIoRead;
-EVT_WDF_IO_QUEUE_IO_WRITE DevRandomEvtIoWrite;
 
+//
+// Fills Buffer with Length random bytes
+//
 NTSTATUS
-DevRandomTimerCreate(
-    IN WDFTIMER*       pTimer,
-    IN ULONG           Period,
-    IN WDFQUEUE        Queue
-    );
-
-EVT_WDF_TIMER DevRandomEvtTimerFunc;
+NTAPI
+DevRandomFillBufferRand(
+    PVOID Buffer,
+    SIZE_T Length);
