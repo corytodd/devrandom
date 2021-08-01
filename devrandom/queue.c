@@ -1,4 +1,6 @@
 #include "driver.h"
+#include "random.h"
+
 #ifdef ALLOC_PRAGMA
 #pragma alloc_text (PAGE, DevRandomQueueInitialize)
 #endif
@@ -140,39 +142,6 @@ Return Value:
     return;
 }
 
-BOOLEAN
-DevRandomDecrementRequestCancelOwnershipCount(
-    PREQUEST_CONTEXT RequestContext
-    )
-/*++
-
-Routine Description:
-    Decrements the cancel ownership count for the request.  When the count
-    reaches zero ownership has been acquired.
-
-Arguments:
-    RequestContext - the context which holds the count
-
-Return Value:
-    TRUE if the caller can complete the request, FALSE otherwise
-
-  --*/
-{
-    LONG result;
-
-    result = InterlockedDecrement(
-        &RequestContext->CancelCompletionOwnershipCount
-        );
-
-    ASSERT(result >= 0);
-
-    if (result == 0) {
-        return TRUE;
-    }
-    else {
-        return FALSE;
-    }
-}
 
 VOID
 DevRandomSetCurrentRequest(
@@ -181,17 +150,8 @@ DevRandomSetCurrentRequest(
     )
 {
     PQUEUE_CONTEXT queueContext;
-    PREQUEST_CONTEXT requestContext;
 
-    requestContext = RequestGetContext(Request);
     queueContext = QueueGetContext(Queue);
-
-    //
-    // Set the ownership count to one.  When a caller wants to claim ownership,
-    // they will interlock decrement the count.  When the count reaches zero,
-    // ownership has been acquired and the caller may complete the request.
-    //
-    requestContext->CancelCompletionOwnershipCount = 1;
 
     queueContext->CurrentRequest = Request;
     queueContext->CurrentStatus  = STATUS_SUCCESS;
@@ -234,6 +194,8 @@ Return Value:
     WDFMEMORY memory;
     PUCHAR randBuffer = NULL;
 
+    UNREFERENCED_PARAMETER(Queue);
+
     _Analysis_assume_(Length > 0);
 
     KdPrint(("DevRandomEvtIoRead Called! Queue 0x%p, Request 0x%p Length %Iu\n",
@@ -260,50 +222,18 @@ Return Value:
     //
     // Fill buffer with random bytes
     //
-    Status = DevRandomFillBufferRand(randBuffer, Length);
-    if( !NT_SUCCESS(Status) ) {
-        KdPrint(("DevRandomEvtIoRead: DevRandomFullBufferRand failed 0x%x\n", Status));
-        WdfRequestComplete(Request, Status);
-        return;
-    }
+    DevRandomFillBufferRand(randBuffer, Length);
 
+    //
     // Set transfer information
+    //
     WdfRequestSetInformation(Request, (ULONG_PTR)Length);
 
+    //
     // All done
+    //
     WdfRequestComplete(Request, Status);
 
     return;
 }
 
-NTSTATUS
-NTAPI
-DevRandomFillBufferRand(
-    PVOID Buffer,
-    SIZE_T Length)
-{
-    static ULONG secRandomSeed = 0;
-
-    LARGE_INTEGER tickCount;
-    ULONG i, randomValue;
-    PULONG ptr;
-
-    /* Try to generate a more random seed */
-    KeQueryTickCount(&tickCount);
-    secRandomSeed ^= _rotl(tickCount.LowPart, (secRandomSeed % 23));
-
-    ptr = Buffer;
-    for (i = 0; i < Length / sizeof(ULONG); i++)
-    {
-        ptr[i] = RtlRandomEx(&secRandomSeed);
-    }
-
-    Length &= (sizeof(ULONG) - 1);
-    if (Length > 0)
-    {
-        randomValue = RtlRandomEx(&secRandomSeed);
-        RtlCopyMemory(&ptr[i], &randomValue, Length);
-    }
-
-    return STATUS_SUCCESS;
-}

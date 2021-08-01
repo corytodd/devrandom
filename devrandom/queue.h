@@ -28,11 +28,3 @@ EVT_WDF_IO_QUEUE_CONTEXT_DESTROY_CALLBACK DevRandomEvtIoQueueContextDestroy;
 //
 EVT_WDF_IO_QUEUE_IO_READ DevRandomEvtIoRead;
 
-//
-// Fills Buffer with Length random bytes
-//
-NTSTATUS
-NTAPI
-DevRandomFillBufferRand(
-    PVOID Buffer,
-    SIZE_T Length);

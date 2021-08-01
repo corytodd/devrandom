@@ -147,7 +147,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\app;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -170,12 +170,15 @@
     <ClCompile Include="device.c" />
     <ClCompile Include="driver.c" />
     <ClCompile Include="queue.c" />
+    <ClCompile Include="random.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\app\public.h" />
+    <ClInclude Include="..\common\pcg32.h" />
+    <ClInclude Include="..\common\public.h" />
     <ClInclude Include="device.h" />
     <ClInclude Include="driver.h" />
     <ClInclude Include="queue.h" />
+    <ClInclude Include="random.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

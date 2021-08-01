@@ -30,6 +30,8 @@ _Analysis_mode_(_Analysis_code_type_user_code_)
 #include <stdlib.h>
 #include "public.h"
 
+#pragma comment(lib, "Cfgmgr32")
+
 #define NUM_ASYNCH_IO   100
 #define BUFFER_SIZE     (40*1024u)
 
