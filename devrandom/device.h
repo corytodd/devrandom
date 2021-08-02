@@ -6,7 +6,7 @@
 //
 typedef struct _DEVICE_CONTEXT
 {
-    ULONG PrivateDeviceData;  // just a placeholder
+    PVOID Dummy;  // Reserved
 
 } DEVICE_CONTEXT, *PDEVICE_CONTEXT;
 

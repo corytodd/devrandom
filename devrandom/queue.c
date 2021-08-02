@@ -64,17 +64,6 @@ Return Value:
     //
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attributes, QUEUE_CONTEXT);
 
-    //
-    // By not setting the synchronization scope and using the default, there is
-    // no locking between any of the callbacks in this driver.
-    //
-    // We will create a sequential queue so all of  the EvtIoXxx callbacks are
-    // serialized against each other (at least until the request is completed),
-    // but the cancel routine and the timer DPC are not synchronized against the
-    // queue's EvtIoXxx callbacks.
-    //
-    // attributes.SynchronizationScope = ...
-
     attributes.EvtDestroyCallback = DevRandomEvtIoQueueContextDestroy;
 
     status = WdfIoQueueCreate(
@@ -96,7 +85,6 @@ Return Value:
 
     queueContext->CurrentRequest = NULL;
     queueContext->CurrentStatus = STATUS_INVALID_DEVICE_REQUEST;
-
 
     return status;
 }
@@ -123,13 +111,6 @@ Return Value:
 --*/
 {
     PQUEUE_CONTEXT queueContext = QueueGetContext(Object);
-
-    //
-    // Release any resources pointed to in the queue context.
-    //
-    // The body of the queue context will be released after
-    // this callback handler returns
-    //
 
     //
     // If Queue context has an I/O buffer, release it
@@ -193,8 +174,6 @@ Return Value:
     NTSTATUS Status;
     WDFMEMORY memory;
     PUCHAR randBuffer = NULL;
-
-    UNREFERENCED_PARAMETER(Queue);
 
     _Analysis_assume_(Length > 0);
 
